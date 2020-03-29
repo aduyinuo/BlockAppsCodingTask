@@ -9,14 +9,18 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DirTraverse {
     private boolean multiThread;
     private boolean keepAlpha;
     private boolean anyDepth;
-    
+    private Logger logger;
+
     private DirTraverse() {
         this.multiThread = false;
+        this.logger = Logger.getLogger(DirTraverse.class.getName()); 
     }    
     
     public boolean isKeepAlpha() {
@@ -46,19 +50,21 @@ public class DirTraverse {
     private class TransferThread implements Runnable {
         private BmpTransfer bt;
         private List<List<String>> pairList;
+        private Logger logger;
 
         TransferThread(List<List<String>> pairList, boolean keepAlpha, boolean anyDepth) {
             this.pairList = pairList;
             this.bt = new BmpTransfer();
             this.bt.setKeepAlpha(keepAlpha);
             this.bt.setAnyDepth(anyDepth);
+            this.logger = Logger.getLogger(TransferThread.class.getName()); 
         }
 
         @Override
         public void run() {
-            System.out.println("Thread running");
+            logger.log(Level.INFO, "Thread running");
             for (List<String> pair: this.pairList) {
-                System.out.println(pair.get(0)+" "+pair.get(1));
+                logger.log(Level.INFO, pair.get(0)+" "+pair.get(1));
                 this.bt.convertPhoto(pair.get(0), pair.get(1));
             }
         }
@@ -82,7 +88,7 @@ public class DirTraverse {
                         });
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            System.out.println("Directory doesn't exist");
+            logger.log(Level.INFO, "Directory doesn't exist");
             return null;
         }
         return pairList;
@@ -90,7 +96,7 @@ public class DirTraverse {
 
     // Single thread implementation
     public void convertFolderSingle(String inDir, String outDir) {
-        System.out.println("Running in single thread mode***");
+        logger.log(Level.CONFIG, "Running in single thread mode***");
         List<List<String>> pairList = this.getFileList(inDir, outDir);
         if (pairList == null) {
             System.out.println("Input is NULL");
@@ -108,17 +114,17 @@ public class DirTraverse {
             e.printStackTrace();
         }
 
-        System.out.println("Image Saved ............"); 
     }
 
     // Multiple threads implementation
     public void convertFolderMulti(String inDir, String outDir) {
-        System.out.println("Running in multi thread mode***");
+        logger.log(Level.CONFIG, "Running in multi thread mode***");
         List<List<String>> pairList = this.getFileList(inDir, outDir);
         if (pairList == null) {
             return;
         }
 
+        // Split file list to 8 sub lists and feed into threads
         int idx = 0;
         List<Thread> threads = new ArrayList<Thread>();
         int sed = pairList.size() < 8 ? pairList.size() : pairList.size() / 8;
@@ -140,8 +146,6 @@ public class DirTraverse {
         } catch(Exception e) {
             e.printStackTrace();
         }
-
-        System.out.println("Image Saved ............"); 
     }
 
     public void convertFolder(String inDir, String outDir) {
@@ -159,7 +163,7 @@ public class DirTraverse {
 
         // Input/Output Directory path are mandatory 
         if (args.length < 2) {
-            System.out.println("Please provide input directory and output directory");
+            dt.logger.log(Level.INFO, "Please provide input directory and output directory");
             return;
         }
 
@@ -169,7 +173,7 @@ public class DirTraverse {
                 inDir = arg;
                 File folder = new File(inDir);
                 if (!folder.exists() && !folder.isDirectory()) {
-                    System.out.println("Input Dir doesn't exist");
+                    dt.logger.log(Level.INFO, "Input Dir doesn't exist");
                     return;
                 } 
             }
@@ -177,7 +181,7 @@ public class DirTraverse {
                 outDir = arg;
                 File folder = new File(outDir);
                 if (!folder.exists() && !folder.isDirectory()) {
-                    System.out.println("Output Dir doesn't exist");
+                    dt.logger.log(Level.INFO, "Output Dir doesn't exist");
                     return;
                 } 
             }
