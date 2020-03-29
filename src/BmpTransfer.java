@@ -78,11 +78,4 @@ public class BmpTransfer {
         }
         this.imageCodecs.imwrite(outputFile, orgMatrix);
     }
-
-    public static void main(String[] args){
-         BmpTransfer bt = new BmpTransfer();
-         String inputFile = "/Users/yinuo/eclipse-workspace/BmpSaver/images/doggie_out.bmp";
-         String outputFile = "/Users/yinuo/eclipse-workspace/BmpSaver/images/doggie_back.bmp";
-         bt.convertPhoto(inputFile, outputFile);
-    }
 }
